@@ -1,0 +1,25 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Project data & artifacts (regenerated, not committed)
+data/raw/
+data/processed/
+artifacts/
+
+# Secrets
+.env
+
+# Internal planning docs — not for public repo
+PRD-prep-presisi.md
+TRD-prep-presisi.md
+
+# Tool cache
+.ruff_cache/
