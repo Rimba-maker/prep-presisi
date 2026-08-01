@@ -78,6 +78,11 @@ def main() -> None:
     if model_name == "xgboost_global":
         model = get_model(model_name, val_df=val)
         fit_df = train
+    elif model_name == "statsforecast_sample":
+        # Butuh histori kontinu sampai tepat sebelum test (StatsForecast meramal h hari
+        # ke depan dari akhir data fit, bukan ke tanggal spesifik) — gabung train+val.
+        model = get_model(model_name)
+        fit_df = pd.concat([train, val], ignore_index=True)
     else:
         model = get_model(model_name)
         fit_df = train

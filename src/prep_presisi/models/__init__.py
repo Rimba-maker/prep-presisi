@@ -2,11 +2,13 @@
 
 from prep_presisi.models.base import BaseForecaster
 from prep_presisi.models.baseline import SeasonalNaiveForecaster
+from prep_presisi.models.statsforecast_model import StatsForecastForecaster
 from prep_presisi.models.xgb_model import XGBoostForecaster
 
 _REGISTRY: dict[str, type[BaseForecaster]] = {
     "seasonal_naive": SeasonalNaiveForecaster,
     "xgboost_global": XGBoostForecaster,
+    "statsforecast_sample": StatsForecastForecaster,
 }
 
 
