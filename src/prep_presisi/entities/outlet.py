@@ -1,6 +1,6 @@
 from enum import Enum
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class SizeTier(str, Enum):
@@ -14,4 +14,4 @@ class Outlet(BaseModel):
     name: str
     region: str
     size_tier: SizeTier
-    base_demand_multiplier: float  # > 0
+    base_demand_multiplier: float = Field(gt=0)
