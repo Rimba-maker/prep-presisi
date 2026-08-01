@@ -10,7 +10,11 @@ from pathlib import Path
 import joblib
 import pandas as pd
 
-from prep_presisi.evaluation import evaluate
+from prep_presisi.evaluation import (
+    compute_waste_avoided,
+    evaluate,
+    total_waste_avoided_rupiah,
+)
 from prep_presisi.features import build_features, split_by_date
 from prep_presisi.models import get_model
 
@@ -72,6 +76,7 @@ def main() -> None:
     model_name = sys.argv[1] if len(sys.argv) > 1 else "seasonal_naive"
 
     sales = pd.read_parquet(RAW_DIR / "sales_records.parquet")
+    menu_items = pd.read_parquet(RAW_DIR / "menu_items.parquet")
     features = build_features(sales)
     train, val, test = split_by_date(features, TRAIN_END, VAL_END, TEST_END)
 
@@ -92,6 +97,13 @@ def main() -> None:
 
     metrics = evaluate(result["qty_sold"], result["predicted_qty"])
     print(f"[{model.name}] test set metrics: {metrics}")
+
+    waste_df = compute_waste_avoided(result, menu_items)
+    total_waste = total_waste_avoided_rupiah(waste_df)
+    metrics["waste_avoided_rupiah"] = total_waste
+    print(
+        f"Estimasi waste avoided (test set, {test['date'].nunique()} hari): Rp {total_waste:,.0f}"
+    )
 
     if hasattr(model, "feature_importance"):
         print("\nFeature importance:")
