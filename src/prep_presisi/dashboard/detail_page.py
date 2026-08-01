@@ -3,6 +3,7 @@ from datetime import timedelta
 import pandas as pd
 import streamlit as st
 
+from prep_presisi.dashboard._components import data_table, entity_picker
 from prep_presisi.dashboard._data import (
     cached_insight,
     compute_backtest_results,
@@ -20,10 +21,8 @@ model = load_latest_model()
 sales, outlets, menu_items = load_raw_data()
 rules = load_rules()
 
-outlet_options = outlets.sort_values("name")
-selected_name = st.selectbox("Pilih outlet", outlet_options["name"])
-selected_outlet_id = str(
-    outlet_options.loc[outlet_options["name"] == selected_name, "outlet_id"].iloc[0]
+selected_outlet_id, selected_name = entity_picker(
+    outlets, id_col="outlet_id", name_col="name", label="Pilih outlet"
 )
 
 next_date = pd.to_datetime(sales["date"]).max().date() + timedelta(days=1)
@@ -63,24 +62,15 @@ table = outlet_next_day.merge(
 table["recommended_qty_prep"] = table["predicted_qty"].round().astype(int)
 table["error_range"] = (table["predicted_qty"] * table["mape"]).round().astype(int)
 
-display_table = table[
-    ["name", "recommended_qty_prep", "error_range", "avg_waste_avoided_rupiah"]
-].rename(
-    columns={
+data_table(
+    table,
+    rename={
         "name": "Menu item",
         "recommended_qty_prep": "Qty prep disarankan",
         "error_range": "± error (estimasi historis)",
         "avg_waste_avoided_rupiah": "Estimasi waste avoided (Rp)",
-    }
-)
-
-st.dataframe(
-    display_table,
-    width="stretch",
-    hide_index=True,
-    column_config={
-        "Estimasi waste avoided (Rp)": st.column_config.NumberColumn(format="Rp %d"),
     },
+    number_formats={"Estimasi waste avoided (Rp)": "Rp %d"},
 )
 
 st.caption(

@@ -1,6 +1,7 @@
 import pandas as pd
 import streamlit as st
 
+from prep_presisi.dashboard._components import data_table, kpi_row
 from prep_presisi.dashboard._data import (
     compute_backtest_results,
     load_latest_model,
@@ -22,10 +23,13 @@ backtest = compute_backtest_results(model, sales, menu_items)
 overall_metrics = evaluate(backtest["qty_sold"], backtest["predicted_qty"])
 total_waste_avoided = backtest["waste_avoided_rupiah"].sum()
 
-col1, col2, col3 = st.columns(3)
-col1.metric("Total waste avoided (test set)", f"Rp {total_waste_avoided:,.0f}")
-col2.metric("MAPE", f"{overall_metrics['mape']:.1%}")
-col3.metric("WMAPE", f"{overall_metrics['wmape']:.1%}")
+kpi_row(
+    {
+        "Total waste avoided (test set)": f"Rp {total_waste_avoided:,.0f}",
+        "MAPE": f"{overall_metrics['mape']:.1%}",
+        "WMAPE": f"{overall_metrics['wmape']:.1%}",
+    }
+)
 
 st.subheader("Performa per outlet")
 
@@ -52,22 +56,13 @@ outlet_summary = (
 )
 outlet_summary["mape"] = outlet_summary["mape"].map(lambda x: f"{x:.1%}")
 
-display_table = outlet_summary[
-    ["name", "region", "waste_avoided_rupiah", "mape"]
-].rename(
-    columns={
+data_table(
+    outlet_summary,
+    rename={
         "name": "Outlet",
         "region": "Wilayah",
         "waste_avoided_rupiah": "Waste avoided (Rp)",
         "mape": "MAPE",
-    }
-)
-
-st.dataframe(
-    display_table,
-    width="stretch",
-    hide_index=True,
-    column_config={
-        "Waste avoided (Rp)": st.column_config.NumberColumn(format="Rp %d"),
     },
+    number_formats={"Waste avoided (Rp)": "Rp %d"},
 )
