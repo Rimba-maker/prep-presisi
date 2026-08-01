@@ -50,4 +50,4 @@ Log lengkap tiap training run: `artifacts/experiments.jsonl` (di-gitignore, rege
 
 ## Status implementasi
 
-Fase 1-6 (data generator, EDA, feature engineering, baseline, XGBoost, StatsForecast) sudah diimplementasikan dan tervalidasi terhadap data nyata. Logic di `evaluation/waste_calculator.py`, `dashboard/`, dan `insights/` belum diimplementasikan.
+Semua fase (1-9) sudah diimplementasikan dan tervalidasi end-to-end: data generator, EDA, feature engineering, baseline, XGBoost, StatsForecast, evaluation (metric + waste avoided Rupiah), dashboard Streamlit (2 halaman, teruji via browser), dan insight naratif LLM (LangChain + OpenRouter, opsional, graceful fallback teruji). Definition of Done (PRD §9.1) terpenuhi.

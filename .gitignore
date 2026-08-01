@@ -23,3 +23,5 @@ TRD-prep-presisi.md
 
 # Tool cache
 .ruff_cache/
+.pytest_cache/
+*.log

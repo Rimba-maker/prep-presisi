@@ -4,12 +4,14 @@ import pandas as pd
 import streamlit as st
 
 from prep_presisi.dashboard._data import (
+    cached_insight,
     compute_backtest_results,
     compute_next_day_predictions,
     load_latest_model,
     load_raw_data,
     load_rules,
 )
+from prep_presisi.entities import InsightContext
 from prep_presisi.evaluation.metrics import mape as mape_fn
 
 st.header("Detail outlet")
@@ -45,6 +47,7 @@ per_item_stats = (
         lambda g: pd.Series(
             {
                 "avg_waste_avoided_rupiah": g["waste_avoided_rupiah"].mean(),
+                "avg_actual_qty": g["qty_sold"].mean(),
                 "mape": mape_fn(g["qty_sold"], g["predicted_qty"]),
             }
         ),
@@ -85,3 +88,33 @@ st.caption(
     "set historis (2025-11-01 s/d 2025-12-31) untuk kombinasi outlet-menu ini — bukan "
     "jaminan angka pasti untuk besok."
 )
+
+st.divider()
+show_insights = st.checkbox(
+    "Tampilkan insight naratif (opsional — butuh OPENROUTER_API_KEY di .env)",
+    value=False,
+)
+if show_insights:
+    for row in table.itertuples():
+        context = InsightContext(
+            outlet_name=selected_name,
+            menu_item_name=row.name,
+            predicted_qty=row.recommended_qty_prep,
+            historical_avg_qty=float(row.avg_actual_qty)
+            if pd.notna(row.avg_actual_qty)
+            else float(row.recommended_qty_prep),
+            waste_avoided_rupiah=float(row.avg_waste_avoided_rupiah)
+            if pd.notna(row.avg_waste_avoided_rupiah)
+            else 0.0,
+            is_weekend=bool(row.is_weekend),
+            is_payday_week=bool(row.is_payday_week),
+            is_ramadan=bool(row.is_ramadan),
+            is_lebaran_week=bool(row.is_lebaran_week),
+        )
+        insight = cached_insight(context)
+        if insight:
+            st.write(f"**{row.name}:** {insight}")
+        else:
+            st.write(
+                f"**{row.name}:** _(insight tidak tersedia — cek OPENROUTER_API_KEY)_"
+            )

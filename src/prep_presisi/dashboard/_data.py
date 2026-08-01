@@ -15,8 +15,10 @@ from prep_presisi.datagen.calendar_rules import (
     is_ramadan,
     is_weekend,
 )
+from prep_presisi.entities import InsightContext
 from prep_presisi.evaluation import compute_waste_avoided
 from prep_presisi.features import build_features, split_by_date
+from prep_presisi.insights import generate_insight
 
 ROOT_DIR = Path(__file__).resolve().parents[3]
 RAW_DIR = ROOT_DIR / "data" / "raw"
@@ -108,3 +110,10 @@ def compute_next_day_predictions(
     next_day_input = features[next_day_mask].reset_index(drop=True)
 
     return _model.predict(next_day_input)
+
+
+@st.cache_data
+def cached_insight(context: InsightContext) -> str | None:
+    """Cache key = isi InsightContext (outlet, menu, tanggal via flag kalender, dst) —
+    generate_insight() cuma dipanggil ulang kalau datanya benar-benar berubah (TRD §3.2)."""
+    return generate_insight(context)
